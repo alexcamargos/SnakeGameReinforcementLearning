@@ -2,7 +2,6 @@ import torch
 import random
 import numpy as np
 
-from matplotlib.pyplot import plot as plt
 from collections import deque
 
 from configurations import Direction, Point, BLOCK_SIZE
@@ -11,10 +10,12 @@ from model import Linear_QNetwork, QTrainer
 from helper import visualization_plot
 
 
+# Configurations for the agent.
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1_000
 LEANING_RATING = .001
 
+# COnfigurations for Linear_QNetwork.
 INPUT_SIZE = 11
 HIDDEN_SIZE = 256
 OUTPUT_SIZE = 3
@@ -35,7 +36,6 @@ class Agent:
 
         self.memory = deque(maxlen=MAX_MEMORY)
 
-        #TODO: Implement the neural network (model and training).
         self.model = Linear_QNetwork(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
         self.trainer = QTrainer(model=self.model, learning_rate=LEANING_RATING, gamma=self.gamma)
 
@@ -144,7 +144,7 @@ def training():
 
     # Main training loop.
     while True:
-        # get the old state of the game.
+        # Get the old state of the game.
         old_state = agent.get_game_state(game)
 
         # Get the final move action of the old state of the game.
@@ -169,8 +169,9 @@ def training():
 
             if score > record_score:
                 record_score = score
-                print("New record: ", record_score)
+                print(f'New record achieved: {record_score}')
 
+                # Save the model.
                 agent.model.save_model()
 
             print_game_information(agent.number_of_games, score, record_score)

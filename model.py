@@ -68,9 +68,9 @@ class QTrainer:
 
             target_prediction[index][torch.argmax(
                 action[index]).item()] = new_Q_value
-
+        
         self.optimizer.zero_grad()
-        loss = self.criterion(prediction, target_prediction)
+        loss = self.criterion(target_prediction, prediction)
         loss.backward()
 
         self.optimizer.step()
