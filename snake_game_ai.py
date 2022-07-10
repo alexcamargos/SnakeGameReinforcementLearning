@@ -10,7 +10,7 @@ font = pygame.font.Font(r'resources\calibri.ttf', 20)
 
 class SnakeGameAI:
 
-    def __init__(self, width=640, height=480):
+    def __init__(self, width=SCREEN_WIDTH, height=SCREEN_HEIGHT):
         # Screen size.
         self.width = width
         self.height = height
@@ -48,7 +48,7 @@ class SnakeGameAI:
 
         self.__place_random_food()
 
-    def __place_random_food(self, action):
+    def __place_random_food(self):
         x = random.randint(0, self.width // BLOCK_SIZE - 1) * BLOCK_SIZE
         y = random.randint(0, self.height // BLOCK_SIZE - 1) * BLOCK_SIZE
 
@@ -66,12 +66,11 @@ class SnakeGameAI:
                 quit()
 
         # Update snake position.
-        self.__make_move(self.direction, action)
+        self.__make_move(action)
         self.snake.insert(0, self.head)
 
         # Check if game is over or if the AI was stuck in a loop.
-        if self.is_collision() or self.state_iteration > 100 * len(
-                self.snake):
+        if self.is_collision() or self.state_iteration > 100 * len(self.snake):
 
             self.game_over = True
             self.reward -= 10
@@ -140,7 +139,9 @@ class SnakeGameAI:
             left = [0, 0, 1]
         """
 
-        moving_direction_clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        moving_direction_clock_wise = [
+            Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP
+        ]
         index = moving_direction_clock_wise.index(self.direction)
 
         if np.array_equal(action, [1, 0, 0]):
@@ -148,12 +149,14 @@ class SnakeGameAI:
         elif np.array_equal(action, [0, 1, 0]):
             # Turn right clockwise:
             # right -> down -> left -> up
-            new_direction = moving_direction_clock_wise[(index + 1) % 4]
-        else np.array_equal(action, [0, 0, 1]):
+            new_index = (index + 1) % 4
+            new_direction = moving_direction_clock_wise[new_index]
+        else:  # [0, 0, 1]
             # Turn left clockwise:
             # left -> up -> down -> right
-            new_direction = moving_direction_clock_wise[(index - 1) % 4]
-        
+            new_index = (index - 1) % 4
+            new_direction = moving_direction_clock_wise[new_index]
+
         self.direction = new_direction
 
         if self.direction == Direction.RIGHT:
@@ -163,6 +166,8 @@ class SnakeGameAI:
         elif self.direction == Direction.DOWN:
             self.head = Point(self.head.x, self.head.y + BLOCK_SIZE)
         elif self.direction == Direction.UP:
-           self.head = Point(self.head.x, self.head.y - BLOCK_SIZE)
+            self.head = Point(self.head.x, self.head.y - BLOCK_SIZE)
         else:
             raise ValueError('Invalid direction.')
+
+        self.head = Point(self.head.x, self.head.y)

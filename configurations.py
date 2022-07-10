@@ -9,6 +9,9 @@ class Direction(Enum):
     DOWN = 4
 
 
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
 Point = namedtuple('Point', 'x, y')
 
 # RGB Colors
