@@ -28,10 +28,34 @@ Instale as dependências
 pip install -r requirements.txt
 ```
 
+Executar em modo humano
+
+```
+python snake_game_human.py
+```
+
+Executar em modo IA
+
+```
+python agent.py
+```
+
 Se não usa virtualenv/virtualenvwrapper e pip, (shame on you). Instale da melhor forma os requisitos presentes em requirements.txt.
 
 ```
-$ cd SnakeGameReinforcementLearning
+cd SnakeGameReinforcementLearning
+```
+
+Executar em modo humano
+
+```
+python snake_game_human.py
+```
+
+Executar em modo IA
+
+```
+python agent.py
 ```
 
 ## Autor
