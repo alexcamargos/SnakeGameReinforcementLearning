@@ -1,21 +1,20 @@
-import torch
 import random
-import numpy as np
-
 from collections import deque
 
-from configurations import Direction, Point, BLOCK_SIZE
-from snake_game_ai import SnakeGameAI
-from model import Linear_QNetwork, QTrainer
-from helper import visualization_plot
+import numpy as np
+import torch
 
+from configurations import Direction, Point, BLOCK_SIZE
+from helper import visualization_plot
+from model import Linear_QNetwork, QTrainer
+from snake_game_ai import SnakeGameAI
 
 # Configurations for the agent.
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1_000
 LEANING_RATING = .001
 
-# COnfigurations for Linear_QNetwork.
+# Configurations for Linear_QNetwork.
 INPUT_SIZE = 11
 HIDDEN_SIZE = 256
 OUTPUT_SIZE = 3
@@ -53,20 +52,20 @@ class Agent:
         direction_up = game.direction == Direction.UP
         direction_down = game.direction == Direction.DOWN
 
-        state = [
+        state = np.array([
             # Danger is in the straight.
             (direction_right and game.is_collision(point_right))
             or (direction_left and game.is_collision(point_left))
             or (direction_up and game.is_collision(point_up))
             or (direction_down and game.is_collision(point_down)),
 
-            # Danger is in the right side.
+            # Danger is on the right side.
             (direction_up and game.is_collision(point_right))
             or (direction_down and game.is_collision(point_left))
             or (direction_left and game.is_collision(point_up))
             or (direction_right and game.is_collision(point_down)),
 
-            # Danger is in the left side.
+            # Danger is on the left side.
             (direction_down and game.is_collision(point_right))
             or (direction_up and game.is_collision(point_left))
             or (direction_right and game.is_collision(point_up))
@@ -79,15 +78,15 @@ class Agent:
             direction_down,
 
             # Food locations:
-            # Food is in the left side of the snake.
+            # Food is on the left side of the snake.
             game.food.x < game.head.x,
-            # Food is in the right side of the snake.
+            # Food is on the right side of the snake.
             game.food.x > game.head.x,
-            # Food is in the up side of the snake.
+            # Food is in the upside of the snake.
             game.food.y < game.head.y,
-            # Food is in the down side of the snake.
+            # Food is in the downside of the snake.
             game.food.y > game.head.y
-        ]
+        ])
 
         return np.array(state, dtype=int)
 

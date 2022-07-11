@@ -1,10 +1,11 @@
-import pygame
 import random
+
+import pygame
 
 from configurations import *
 
 pygame.init()
-font = pygame.font.Font('resources\calibri.ttf', 20)
+font = pygame.font.Font(r'resources\calibri.ttf', 20)
 
 
 class SnakeGame:
@@ -86,13 +87,16 @@ class SnakeGame:
 
         # Update display and clock.
         self._update_user_interface()
-        self.clock.tick(SPEED)
+        self.clock.tick(SPEED_FOR_HUMAN)
 
         return self.game_over, self.score
 
     def _is_collision(self):
         # Check collision with boundary.
-        if self.head.x > self.width - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.height - BLOCK_SIZE or self.head.y < 0:
+        if self.head.x > self.width - BLOCK_SIZE \
+                or self.head.x < 0 \
+                or self.head.y > self.height - BLOCK_SIZE \
+                or self.head.y < 0:
             return True
 
         # Check collision with self.
