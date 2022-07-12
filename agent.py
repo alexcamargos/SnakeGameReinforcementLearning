@@ -6,7 +6,7 @@ import torch
 
 from configurations import Direction, Point, BLOCK_SIZE
 from helper import visualization_plot
-from model import Linear_QNetwork, QTrainer
+from model import LinearQNetwork, QTrainer
 from snake_game_ai import SnakeGameAI
 
 # Configurations for the agent.
@@ -14,7 +14,7 @@ MAX_MEMORY = 100_000
 BATCH_SIZE = 1_000
 LEANING_RATING = .001
 
-# Configurations for Linear_QNetwork.
+# Configurations for LinearQNetwork.
 INPUT_SIZE = 11
 HIDDEN_SIZE = 256
 OUTPUT_SIZE = 3
@@ -35,10 +35,46 @@ class Agent:
 
         self.memory = deque(maxlen=MAX_MEMORY)
 
-        self.model = Linear_QNetwork(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
+        self.model = LinearQNetwork(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
         self.trainer = QTrainer(model=self.model, learning_rate=LEANING_RATING, gamma=self.gamma)
 
-    def get_game_state(self, game):
+    def remember_state(self, state, action, reward, next_state, done):
+        # Auto popleft the oldest element if the memory is full (MAX_MEMORY).
+        self.memory.append((state, action, reward, next_state, done))
+
+    def train_short_memory(self, state, action, reward, next_state, done):
+        self.trainer.train_step(state, action, reward, next_state, done)
+
+    def train_long_memory(self):
+        if len(self.memory) > BATCH_SIZE:
+            minimal_sample = random.sample(self.memory, BATCH_SIZE)
+        else:
+            minimal_sample = self.memory
+
+        states, actions, rewards, next_states, dones = zip(*minimal_sample)
+        self.train_short_memory(states, actions, rewards, next_states, dones)
+
+    def get_action(self, state):
+        # In the binging of the game, the agent will do random moves.
+        # Tradeoff: exploration vs. exploitation.
+
+        # Randomly choose an action.
+        self.epsilon = 80 - self.number_of_games
+        final_move = [0, 0, 0]
+
+        if random.randint(0, 200) < self.epsilon:
+            move = random.randint(0, 2)
+            final_move[move] = 1
+        else:
+            initial_state = torch.tensor(state, dtype=torch.float)
+            prediction = self.model(initial_state)
+            move = torch.argmax(prediction).item()
+            final_move[move] = 1
+
+        return final_move
+
+    @staticmethod
+    def get_game_state(game):
         # Snake's head position.
         snake_head = game.snake[0]
 
@@ -89,41 +125,6 @@ class Agent:
         ])
 
         return np.array(state, dtype=int)
-
-    def remember_state(self, state, action, reward, next_state, done):
-        # Auto popleft the oldest element if the memory is full (MAX_MEMORY).
-        self.memory.append((state, action, reward, next_state, done))
-
-    def train_short_memory(self, state, action, reward, next_state, done):
-        self.trainer.train_step(state, action, reward, next_state, done)
-
-    def train_long_memory(self):
-        if len(self.memory) > BATCH_SIZE:
-            minimal_sample = random.sample(self.memory, BATCH_SIZE)
-        else:
-            minimal_sample = self.memory
-
-        states, actions, rewards, next_states, dones = zip(*minimal_sample)
-        self.train_short_memory(states, actions, rewards, next_states, dones)
-
-    def get_action(self, state):
-        # In the binging of the game, the agent will do random moves.
-        # Tradeoff: exploration vs. exploitation.
-
-        # Randomly choose an action.
-        self.epsilon = 80 - self.number_of_games
-        final_move = [0, 0, 0]
-
-        if random.randint(0, 200) < self.epsilon:
-            move = random.randint(0, 2)
-            final_move[move] = 1
-        else:
-            initial_state = torch.tensor(state, dtype=torch.float)
-            prediction = self.model(initial_state)
-            move = torch.argmax(prediction).item()
-            final_move[move] = 1
-
-        return final_move
 
 
 def print_game_information(number_of_games, score, record_score):

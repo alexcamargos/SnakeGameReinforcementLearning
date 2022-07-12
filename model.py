@@ -7,10 +7,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-class Linear_QNetwork(nn.Module):
+class LinearQNetwork(nn.Module):
 
     def __init__(self, input_size, hidden_size, output_size):
-        super(Linear_QNetwork, self).__init__()
+        super(LinearQNetwork, self).__init__()
 
         self.linear_1 = nn.Linear(input_size, hidden_size)
         self.linear_2 = nn.Linear(hidden_size, output_size)
@@ -22,14 +22,12 @@ class Linear_QNetwork(nn.Module):
         return x
 
     def save_model(self, path=None, file_name='model.pth'):
+        folder_path = path if path else os.path.join(os.getcwd(), 'model')
 
-        if path is None:
-            model_folder_path = os.path.join(os.getcwd(), 'model')
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
-        if not os.path.exists(model_folder_path):
-            os.makedirs(model_folder_path)
-
-        file_name_path = os.path.join(model_folder_path, file_name)
+        file_name_path = os.path.join(folder_path, file_name)
         torch.save(self.state_dict(), file_name_path)
 
 
@@ -53,7 +51,7 @@ class QTrainer:
             next_state = torch.unsqueeze(next_state, 0)
             action = torch.unsqueeze(action, 0)
             reward = torch.unsqueeze(reward, 0)
-            done = (done, )
+            done = (done,)
 
         # Get the Q values for the current state.
         prediction = self.model(state)
@@ -69,7 +67,7 @@ class QTrainer:
 
             target_prediction[index][torch.argmax(
                 action[index]).item()] = new_Q_value
-        
+
         self.optimizer.zero_grad()
         loss = self.criterion(target_prediction, prediction)
         loss.backward()
